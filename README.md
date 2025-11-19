@@ -96,7 +96,7 @@ sxfm | 5 listeners | Music from bands who will be performing at SXSW, one of the
 ```
 ### Display history of listened tracks
 ```console
-somafm history groovesalad
+$ somafm history groovesalad
 20:24:54 | Lusine - On Telegraph
 2025-11-18 21:14:23 | Moss - A Twist In My Tourniquet
 2025-11-18 21:18:48 | Gold Lounge - Hope
