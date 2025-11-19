@@ -35,6 +35,7 @@ $ somafm --help
 Usage:
   somafm channels
   somafm listen <channel> [--quality=<low|high|highest>]
+  somafm history <channel>
 
 Options:
   quality    The listening quality (default: high)
@@ -93,6 +94,13 @@ covers | 18 listeners | Just covers. Songs you know by artists you don't. We've 
 metal | 14 listeners | NEW! From black to doom, prog to sludge, thrash to post, stoner to crossover, punk to industrial.
 sxfm | 5 listeners | Music from bands who will be performing at SXSW, one of the biggest and best music festivals in the world. [explicit]
 ```
+### Display history of listened tracks
+```
+somafm history defcon
+20:24:54 | Lusine - On Telegraph
+2025-11-18 21:14:23 | Moss - A Twist In My Tourniquet
+2025-11-18 21:18:48 | Gold Lounge - Hope
+```
 
 ## License
 ```
@@ -118,3 +126,5 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ```
+
+Track listing repaired and history function added by pwnbait AKA Fredward Goodboy 2025-11-18 with the assistance of Gemini-CLI.
