@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
 bindir=
-logdir=
 
 ## Command parsing ################################################################################
 cmd="${1}"; shift
@@ -15,6 +14,7 @@ while (( "$#" )); do
     -q*) quality=${2}; shift; shift ;;
     *)
       case "${cmd}" in
+        history) test -n "${1}" && test -z "${channel}" && channel=${1} ;;
         listen|play) test -n "${1}" && test -z "${channel}" && channel=${1} ;;
       esac
       shift
@@ -29,6 +29,10 @@ esac
 
 ## Argument and option prompting ##################################################################
 case "${cmd}" in
+  history)
+    test -z "${channel}" && \
+      read -e -p 'Enter channel (e.g. groovesalad, defcon, poptron): ' channel
+  ;;
   listen|play)
     test -z "${channel}" && \
       read -e -p 'Enter channel (e.g. groovesalad, defcon, poptron): ' channel
@@ -53,6 +57,7 @@ function help() {
 
   echo 'Usage:'
   echo "  ${bin} channels"
+  echo "  ${bin} history <channel>"
   echo "  ${bin} listen <channel> [--quality=<low|high|highest>]"
   echo
   echo 'Options:'
@@ -60,17 +65,44 @@ function help() {
   echo
   echo 'Commands:'
   echo '  channels|list|ls    List channels'
+  echo '  history             Show channel history'
   echo '  listen|play         Listen to channel'
 }
 
+function history() {
+  local logdir="${HOME}/.somafm"
+  local logfile="${logdir}/${channel}.log"
+
+  if [ -f "${logfile}" ]; then
+    cat "${logfile}"
+  else
+    echo "No history for channel: ${channel}"
+    return 1
+  fi
+}
+
 function listen() {
+  local logdir="${HOME}/.somafm"
+  local logfile="${logdir}/${channel}.log"
   local playlist=$(curl -s -H 'Accept: application/json' https://somafm.com/channels.json | \
     jq -r ".channels | map(select(.id == \"${channel}\")) | .[]" | \
     jq -r ".playlists | map(select(.quality == \"${quality}\")) | limit(1;.[]) | .url")
 
   case "${playlist}" in
     '') return 1 ;;
-    *) mpv --no-config "${playlist}" 2> /dev/null | awk '/title/ { s = ""; for (i = 2; i <= NF; i++) s = s $i " "; cmd="(date +'%H:%M:%S')"; cmd | getline d; print d,"|",s; close(cmd) }' ;;
+    *)
+      mkdir -p "${logdir}"
+      touch "${logfile}"
+      stdbuf -oL mpv --no-config "${playlist}" 2> /dev/null | \
+        while read -r line; do
+          if [[ "${line}" == *title* ]]; then
+            title=$(echo "${line}" | sed 's/.*title: //')
+            timestamp=$(date +'%Y-%m-%d %H:%M:%S')
+            echo "${timestamp} | ${title}"
+            echo "${timestamp} | ${title}" >> "${logfile}"
+          fi
+        done
+    ;;
   esac
 }
 
@@ -83,6 +115,7 @@ case "${cmd}" in
   --help|-h) help; exit 0 ;;
   --version|-v) version; exit 0 ;;
   channels|list|ls) channels; exit "$?" ;;
+  history) history; exit "$?" ;;
   listen|play) listen; exit "$?" ;;
   *) help; exit 1 ;;
 esac
